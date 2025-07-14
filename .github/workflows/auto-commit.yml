@@ -1,0 +1,33 @@
+name: Scheduled commit based on date list
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Run every day at 06:00 UTC
+  workflow_dispatch:      # Allows manual triggering of the workflow
+
+jobs:
+  commit_if_date_matches:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Configure Git
+      run: |
+        git config user.name "andrew-ksv"
+        git config user.email "127143251+andrew-ksv@users.noreply.github.com"
+
+    - name: Commit if today's date is in the list
+      run: |
+        today=$(date '+%Y-%m-%d')
+        echo "Today is $today"
+
+        if grep -q "$today" dates.txt; then
+          echo "$today $(date '+%H:%M') - Automatic commit" >> log.txt
+          git add log.txt
+          git commit -m "Automatic commit $today"
+          git push
+        else
+          echo "No commit needed today ¯\\_(ツ)_/¯"
+        fi
